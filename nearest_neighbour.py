@@ -34,17 +34,39 @@ def learnknn(k: int, x_train: np.array, y_train: np.array):
     :param y_train: numpy array of size (m, 1) containing the labels of the training sample
     :return: classifier data structure
     """
-    raise NotImplementedError()
+    classifier = {
+        "k": k,
+        "x_train": x_train,
+        "y_train": y_train
+    }
+
+    return classifier
 
 def predictknn(classifier, x_test: np.array):
     """
-
     :param classifier: data structure returned from the function learnknn
     :param x_test: numpy array of size (n, d) containing test examples that will be classified
     :return: numpy array of size (n, 1) classifying the examples in x_test
     """
-    raise NotImplementedError()
+    
+    k = classifier["k"]
+    x_train = classifier["x_train"]
+    y_train = classifier["y_train"].reshape(-1)
+    n = x_test.shape[0]
+    pred = np.zeros((n,1), dtype=int)
 
+    for i in range(n):
+        xi_test = x_test[i]
+        distances = np.linalg.norm(x_train - xi_test, axis=1)
+        sorted_indices = np.argsort(distances)
+        
+        k_nearest_labels = y_train[sorted_indices[:k]]
+        label_count = np.bincount(k_nearest_labels.astype(int))
+        pred[i] = np.argmax(label_count)
+    return pred.reshape(-1, 1)
+
+
+    
 
 def simple_test():
     data = np.load('mnist_all.npz')
