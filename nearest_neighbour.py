@@ -42,6 +42,7 @@ def learnknn(k: int, x_train: np.array, y_train: np.array):
 
     return classifier
 
+
 def predictknn(classifier, x_test: np.array):
     """
     :param classifier: data structure returned from the function learnknn
@@ -53,20 +54,37 @@ def predictknn(classifier, x_test: np.array):
     x_train = classifier["x_train"]
     y_train = classifier["y_train"].reshape(-1)
     n = x_test.shape[0]
-    pred = np.zeros((n,1), dtype=int)
+    pred = np.zeros((n, 1), dtype=y_train.dtype)
 
     for i in range(n):
-        xi_test = x_test[i]
-        distances = np.linalg.norm(x_train - xi_test, axis=1)
-        sorted_indices = np.argsort(distances)
+        distances = np.array([np.linalg.norm(x_test[i] - x_train[j]) 
+                              for j in range(len(x_train))])
+        k_nearest_labels = y_train[np.argsort(distances)[:k]]
         
-        k_nearest_labels = y_train[sorted_indices[:k]]
-        label_count = np.bincount(k_nearest_labels.astype(int))
-        pred[i] = np.argmax(label_count)
+        unique_labels, counts = np.unique(k_nearest_labels, return_counts=True)
+        pred[i] = unique_labels[np.argmax(counts)]
+
     return pred.reshape(-1, 1)
 
 
-    
+def predictknn2(classifier, x_test):
+    k = classifier["k"]
+    x_train = classifier["x_train"]
+    y_train = classifier["y_train"].reshape(-1)
+
+    test_sq  = np.sum(x_test**2,  axis=1, keepdims=True)  # (n, 1)
+    train_sq = np.sum(x_train**2, axis=1)                  # (m,)
+    cross    = x_test @ x_train.T                          # (n, m)
+    dists    = np.sqrt(test_sq + train_sq - 2*cross)       # (n, m)
+
+    k_nearest_indices = np.argsort(dists, axis=1)[:, :k]   # (n, k)
+    k_nearest_labels  = y_train[k_nearest_indices]          # (n, k)
+
+    unique_labels = np.unique(y_train)
+    counts = np.array([(k_nearest_labels == label).sum(axis=1)
+                       for label in unique_labels])         # (num_labels, n)
+
+    return unique_labels[np.argmax(counts, axis=0)].reshape(-1, 1)  # (n, 1)
 
 def simple_test():
     data = np.load('mnist_all.npz')
@@ -81,7 +99,7 @@ def simple_test():
     test2 = data['test2']
     test3 = data['test3']
 
-    x_train, y_train = gensmallm([train0, train1, train2, train3], [0, 1, 2, 3], 100)
+    x_train, y_train = gensmallm([train0, tr ain1, train2, train3], [0, 1, 2, 3], 100)
 
     x_test, y_test = gensmallm([test0, test1, test2, test3], [0, 1, 2, 3], 50)
 
@@ -101,9 +119,13 @@ def simple_test():
     print(f"The {i}'th test sample was classified as {preds[i]}")
 
 
+
 if __name__ == '__main__':
 
     # before submitting, make sure that the function simple_test runs without errors
     simple_test()
+   
+
+
 
 
