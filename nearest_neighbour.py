@@ -67,25 +67,6 @@ def predictknn(classifier, x_test: np.array):
     return pred.reshape(-1, 1)
 
 
-def predictknn2(classifier, x_test):
-    k = classifier["k"]
-    x_train = classifier["x_train"]
-    y_train = classifier["y_train"].reshape(-1)
-
-    test_sq  = np.sum(x_test**2,  axis=1, keepdims=True)  # (n, 1)
-    train_sq = np.sum(x_train**2, axis=1)                  # (m,)
-    cross    = x_test @ x_train.T                          # (n, m)
-    dists    = np.sqrt(test_sq + train_sq - 2*cross)       # (n, m)
-
-    k_nearest_indices = np.argsort(dists, axis=1)[:, :k]   # (n, k)
-    k_nearest_labels  = y_train[k_nearest_indices]          # (n, k)
-
-    unique_labels = np.unique(y_train)
-    counts = np.array([(k_nearest_labels == label).sum(axis=1)
-                       for label in unique_labels])         # (num_labels, n)
-
-    return unique_labels[np.argmax(counts, axis=0)].reshape(-1, 1)  # (n, 1)
-
 def simple_test():
     data = np.load('mnist_all.npz')
 
