@@ -80,7 +80,7 @@ def simple_test():
     test2 = data['test2']
     test3 = data['test3']
 
-    x_train, y_train = gensmallm([train0, tr ain1, train2, train3], [0, 1, 2, 3], 100)
+    x_train, y_train = gensmallm([train0, train1, train2, train3], [0, 1, 2, 3], 100)
 
     x_test, y_test = gensmallm([test0, test1, test2, test3], [0, 1, 2, 3], 50)
 
